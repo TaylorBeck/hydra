@@ -1,103 +1,128 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from '@/components/ai-elements/conversation';
+import { Message, MessageContent } from '@/components/ai-elements/message';
+import {
+  PromptInput,
+  PromptInputModelSelect,
+  PromptInputModelSelectContent,
+  PromptInputModelSelectItem,
+  PromptInputModelSelectTrigger,
+  PromptInputModelSelectValue,
+  PromptInputSubmit,
+  PromptInputTextarea,
+  PromptInputToolbar,
+  PromptInputTools,
+} from '@/components/ai-elements/prompt-input';
+import { useState } from 'react';
+import { useChat } from '@ai-sdk/react';
+import { Response } from '@/components/ai-elements/response';
+
+const models = [
+  // OpenAI Models
+  { id: 'gpt-4o', name: 'GPT-4o', provider: 'OpenAI' },
+  { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'OpenAI' },
+  { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo', provider: 'OpenAI' },
+  
+  // Anthropic Models
+  { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', provider: 'Anthropic' },
+  { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', provider: 'Anthropic' },
+  { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus', provider: 'Anthropic' },
+  
+  // Google Models
+  { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', provider: 'Google' },
+  { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', provider: 'Google' },
+  
+  // Mistral Models
+  { id: 'mistral-large-latest', name: 'Mistral Large', provider: 'Mistral' },
+  { id: 'mistral-small-latest', name: 'Mistral Small', provider: 'Mistral' },
+];
+
+export default function Chat() {
+  const [input, setInput] = useState('');
+  const [model, setModel] = useState(models[0].id);
+  const { messages, sendMessage, status } = useChat();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (input.trim()) {
+      sendMessage(
+        { text: input },
+        {
+          body: {
+            model: model,
+          },
+        }
+      );
+      setInput('');
+    }
+  };
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="max-w-4xl mx-auto p-6 relative size-full h-screen">
+      <div className="flex flex-col h-full">
+        <Conversation className="h-full">
+          <ConversationContent>
+            {messages.map((message) => (
+              <Message from={message.role} key={message.id}>
+                <MessageContent>
+                  {message.parts.map((part, i) => {
+                    switch (part.type) {
+                      case 'text':
+                        return (
+                          <Response key={`${message.id}-${i}`}>
+                            {part.text}
+                          </Response>
+                        );
+                      default:
+                        return null;
+                    }
+                  })}
+                </MessageContent>
+              </Message>
+            ))}
+          </ConversationContent>
+          <ConversationScrollButton />
+        </Conversation>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+        <PromptInput onSubmit={handleSubmit} className="mt-4">
+          <PromptInputTextarea
+            value={input}
+            placeholder="Say something..."
+            onChange={(e) => setInput(e.currentTarget.value)}
+          />
+          <PromptInputToolbar>
+            <PromptInputTools>
+              <PromptInputModelSelect
+                onValueChange={(value) => setModel(value)}
+                value={model}
+              >
+                <PromptInputModelSelectTrigger>
+                  <PromptInputModelSelectValue />
+                </PromptInputModelSelectTrigger>
+                <PromptInputModelSelectContent>
+                  {models.map((model) => (
+                    <PromptInputModelSelectItem key={model.id} value={model.id}>
+                      <div className="flex flex-col">
+                        <span>{model.name}</span>
+                        <span className="text-xs text-muted-foreground">{model.provider}</span>
+                      </div>
+                    </PromptInputModelSelectItem>
+                  ))}
+                </PromptInputModelSelectContent>
+              </PromptInputModelSelect>
+            </PromptInputTools>
+            <PromptInputSubmit
+              status={status === 'streaming' ? 'streaming' : 'ready'}
+              disabled={!input.trim()}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          </PromptInputToolbar>
+        </PromptInput>
+      </div>
     </div>
   );
 }
