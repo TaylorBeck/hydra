@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
@@ -40,8 +42,6 @@ export const PromptInputTextarea = ({
   onChange,
   className,
   placeholder = 'What would you like to know?',
-  minHeight = 48,
-  maxHeight = 164,
   ...props
 }: PromptInputTextareaProps) => {
   const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
@@ -227,4 +227,22 @@ export const PromptInputModelSelectValue = ({
   ...props
 }: PromptInputModelSelectValueProps) => (
   <SelectValue className={cn(className)} {...props} />
+);
+
+export type PromptInputModelSelectGroupProps = ComponentProps<typeof SelectGroup>;
+
+export const PromptInputModelSelectGroup = ({
+  className,
+  ...props
+}: PromptInputModelSelectGroupProps) => (
+  <SelectGroup className={cn(className)} {...props} />
+);
+
+export type PromptInputModelSelectLabelProps = ComponentProps<typeof SelectLabel>;
+
+export const PromptInputModelSelectLabel = ({
+  className,
+  ...props
+}: PromptInputModelSelectLabelProps) => (
+  <SelectLabel className={cn('font-semibold text-foreground', className)} {...props} />
 );
