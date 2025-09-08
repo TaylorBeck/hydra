@@ -126,7 +126,7 @@ export function AuthButton() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {authMode === 'login' ? 'Sign in to Hydra' : 'Create your account'}
+              {authMode === 'login' ? 'Sign in to Hyra' : 'Create your account'}
             </DialogTitle>
           </DialogHeader>
           

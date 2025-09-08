@@ -47,7 +47,7 @@ export default function Chat() {
             </div>
             <div className="hidden sm:block">
               <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-                Hydra
+                Hyra
               </h1>
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 Chat with multiple LLMs
