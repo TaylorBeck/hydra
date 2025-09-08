@@ -13,12 +13,19 @@ import {
   Download,
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Menu
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,6 +46,9 @@ interface ConversationSidebarProps {
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
   className?: string;
+  isMobile?: boolean;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 interface ConversationItemProps {
@@ -76,6 +86,8 @@ function ConversationItem({
     <div
       className={cn(
         'group relative flex items-center gap-3 rounded-lg p-3 hover:bg-accent/50 cursor-pointer transition-colors',
+        'touch-manipulation', // Better touch handling on mobile
+        'min-h-[3rem]', // Ensure minimum touch target size
         isActive && 'bg-accent',
         isCollapsed && 'justify-center p-2'
       )}
@@ -154,6 +166,37 @@ function ConversationItem({
   );
 }
 
+// Mobile sidebar trigger button component
+export function MobileSidebarTrigger({ 
+  onClick, 
+  conversationCount = 0 
+}: { 
+  onClick: () => void; 
+  conversationCount?: number; 
+}) {
+  const handleClick = () => {
+    console.log('Mobile sidebar trigger clicked');
+    onClick();
+  };
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="h-9 w-9 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors duration-200 relative"
+      onClick={handleClick}
+    >
+      <Menu className="h-4 w-4" />
+      {conversationCount > 0 && (
+        <div className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-4 w-4 flex items-center justify-center text-[10px] font-medium">
+          {conversationCount > 99 ? '99+' : conversationCount}
+        </div>
+      )}
+      <span className="sr-only">Open conversations</span>
+    </Button>
+  );
+}
+
 export function ConversationSidebar({
   currentConversationId,
   onConversationSelect,
@@ -161,6 +204,9 @@ export function ConversationSidebar({
   isCollapsed = false,
   onToggleCollapse,
   className,
+  isMobile = false,
+  isOpen = false,
+  onOpenChange,
 }: ConversationSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showArchived, setShowArchived] = useState(false);
@@ -241,86 +287,53 @@ export function ConversationSidebar({
     console.log('Rename conversation:', conversationId);
   };
 
-  if (!isAuthenticated) {
-    return (
-      <div className={cn(
-        'flex flex-col h-full bg-muted/30 border-r transition-all duration-200',
-        isCollapsed ? 'w-16' : 'w-80',
-        className
-      )}>
-        {/* Header for unauthenticated users */}
-        <div className="flex items-center justify-between p-4 border-b">
-          {!isCollapsed && (
-            <h2 className="font-semibold text-sm">Conversations</h2>
-          )}
-          <div className="flex items-center gap-1">
-            {onToggleCollapse && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={onToggleCollapse}
-                title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              >
-                {isCollapsed ? (
-                  <ChevronRight className="h-4 w-4" />
-                ) : (
-                  <ChevronLeft className="h-4 w-4" />
-                )}
-              </Button>
-            )}
-          </div>
-        </div>
-        
-        {/* Content area */}
-        <div 
-          className={cn(
-            'flex-1 flex flex-col items-center justify-center p-4 text-center',
-            isCollapsed && 'cursor-pointer hover:bg-muted/50 transition-colors'
-          )}
-          onClick={isCollapsed ? onToggleCollapse : undefined}
-        >
-          <MessageSquare className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-          {!isCollapsed && (
-            <p className="text-sm text-muted-foreground">
-              Sign in to save your conversations
-            </p>
-          )}
-        </div>
-      </div>
-    );
-  }
+  const handleConversationSelect = (conversationId: string) => {
+    onConversationSelect(conversationId);
+    // Close mobile sidebar after selection
+    if (isMobile && onOpenChange) {
+      onOpenChange(false);
+    }
+  };
 
-  return (
+  const handleNewConversation = () => {
+    onNewConversation();
+    // Close mobile sidebar after creating new conversation
+    if (isMobile && onOpenChange) {
+      onOpenChange(false);
+    }
+  };
+
+  // Sidebar content component
+  const SidebarContent = () => (
     <div className={cn(
-      'flex flex-col h-full bg-muted/30 border-r transition-all duration-200',
-      isCollapsed ? 'w-16' : 'w-80',
-      className
+      'flex flex-col h-full bg-muted/30 transition-all duration-200',
+      !isMobile && (isCollapsed ? 'w-16' : 'w-80'),
+      isMobile && 'w-full'
     )}>
       {/* Header */}
       <div 
         className={cn(
           'flex items-center justify-between p-4 border-b',
-          isCollapsed && 'cursor-pointer hover:bg-muted/50 transition-colors'
+          isCollapsed && !isMobile && 'cursor-pointer hover:bg-muted/50 transition-colors'
         )}
-        onClick={isCollapsed ? onToggleCollapse : undefined}
+        onClick={isCollapsed && !isMobile ? onToggleCollapse : undefined}
       >
-        {!isCollapsed && (
+        {(!isCollapsed || isMobile) && (
           <h2 className="font-semibold text-sm">Conversations</h2>
         )}
         <div className="flex items-center gap-1">
-          {!isCollapsed && (
+          {(!isCollapsed || isMobile) && (
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              onClick={onNewConversation}
+              onClick={handleNewConversation}
               title="New conversation"
             >
               <Plus className="h-4 w-4" />
             </Button>
           )}
-          {onToggleCollapse && (
+          {onToggleCollapse && !isMobile && (
             <Button
               variant="ghost"
               size="icon"
@@ -341,7 +354,7 @@ export function ConversationSidebar({
         </div>
       </div>
 
-      {!isCollapsed && (
+      {(!isCollapsed || isMobile) && (
         <>
           {/* Search */}
           <div className="p-4 pb-2">
@@ -388,11 +401,11 @@ export function ConversationSidebar({
         <div 
           className={cn(
             'p-2',
-            isCollapsed && 'cursor-pointer hover:bg-muted/50 transition-colors'
+            isCollapsed && !isMobile && 'cursor-pointer hover:bg-muted/50 transition-colors'
           )}
-          onClick={isCollapsed ? onToggleCollapse : undefined}
+          onClick={isCollapsed && !isMobile ? onToggleCollapse : undefined}
         >
-          {isCollapsed ? (
+          {isCollapsed && !isMobile ? (
             // Collapsed state - show conversation count or icon
             <div className="flex flex-col items-center justify-center py-4">
               <MessageSquare className="h-6 w-6 text-muted-foreground mb-2" />
@@ -445,7 +458,7 @@ export function ConversationSidebar({
                   variant="outline"
                   size="sm"
                   className="mt-3"
-                  onClick={onNewConversation}
+                  onClick={handleNewConversation}
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   New Chat
@@ -459,8 +472,8 @@ export function ConversationSidebar({
                   key={conversation.id}
                   conversation={conversation}
                   isActive={conversation.id === currentConversationId}
-                  isCollapsed={isCollapsed}
-                  onSelect={() => onConversationSelect(conversation.id)}
+                  isCollapsed={isCollapsed && !isMobile}
+                  onSelect={() => handleConversationSelect(conversation.id)}
                   onDelete={() => handleDelete(conversation.id)}
                   onArchive={() => handleArchive(conversation.id)}
                   onExport={() => handleExport(conversation.id)}
@@ -471,6 +484,92 @@ export function ConversationSidebar({
           )}
         </div>
       </ScrollArea>
+    </div>
+  );
+
+  // Mobile version - render as a dialog/drawer
+  if (isMobile) {
+    console.log('Mobile sidebar rendering, isOpen:', isOpen);
+    return (
+      <Dialog open={isOpen} onOpenChange={onOpenChange}>
+        <DialogContent className="h-[85vh] max-w-sm p-0 gap-0 left-4 right-4 top-[10vh] translate-x-0 translate-y-0 max-h-[85vh] w-auto data-[state=open]:slide-in-from-bottom-4 data-[state=closed]:slide-out-to-bottom-4 rounded-t-xl border-0 shadow-2xl">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Conversations</DialogTitle>
+          </DialogHeader>
+          <SidebarContent />
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Desktop version - render normally
+  if (!isAuthenticated) {
+    const UnauthenticatedContent = () => (
+      <div className={cn(
+        'flex flex-col h-full bg-muted/30 transition-all duration-200',
+        isCollapsed ? 'w-16' : 'w-80'
+      )}>
+        {/* Header for unauthenticated users */}
+        <div 
+          className={cn(
+            'flex items-center justify-between p-4 border-b',
+            isCollapsed && 'cursor-pointer hover:bg-muted/50 transition-colors'
+          )}
+          onClick={isCollapsed ? onToggleCollapse : undefined}
+        >
+          {!isCollapsed && (
+            <h2 className="font-semibold text-sm">Conversations</h2>
+          )}
+          <div className="flex items-center gap-1">
+            {onToggleCollapse && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleCollapse();
+                }}
+                title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              >
+                {isCollapsed ? (
+                  <ChevronRight className="h-4 w-4" />
+                ) : (
+                  <ChevronLeft className="h-4 w-4" />
+                )}
+              </Button>
+            )}
+          </div>
+        </div>
+        
+        {/* Content area */}
+        <div 
+          className={cn(
+            'flex-1 flex flex-col items-center justify-center p-4 text-center',
+            isCollapsed && 'cursor-pointer hover:bg-muted/50 transition-colors'
+          )}
+          onClick={isCollapsed ? onToggleCollapse : undefined}
+        >
+          <MessageSquare className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+          {!isCollapsed && (
+            <p className="text-sm text-muted-foreground">
+              Sign in to save your conversations
+            </p>
+          )}
+        </div>
+      </div>
+    );
+
+    return (
+      <div className={cn('border-r', className)}>
+        <UnauthenticatedContent />
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn('border-r', className)}>
+      <SidebarContent />
     </div>
   );
 }

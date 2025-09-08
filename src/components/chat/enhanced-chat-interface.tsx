@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Conversation,
   ConversationContent,
@@ -69,14 +69,54 @@ const getMessageContent = (message: UIMessage): string => {
 
 interface EnhancedChatInterfaceProps {
   className?: string;
+  // Mobile sidebar props - when provided, use external state management
+  isMobile?: boolean;
+  isMobileSidebarOpen?: boolean;
+  onMobileSidebarOpenChange?: (open: boolean) => void;
 }
 
-export function EnhancedChatInterface({ className }: EnhancedChatInterfaceProps) {
+// Hook to manage mobile sidebar state - can be used by parent components
+export function useMobileSidebar() {
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
+
+  return {
+    isMobile,
+    isMobileSidebarOpen,
+    setIsMobileSidebarOpen,
+    toggleMobileSidebar: () => setIsMobileSidebarOpen(!isMobileSidebarOpen),
+  };
+}
+
+export function EnhancedChatInterface({ 
+  className,
+  isMobile: externalIsMobile,
+  isMobileSidebarOpen: externalIsMobileSidebarOpen,
+  onMobileSidebarOpenChange: externalOnMobileSidebarOpenChange
+}: EnhancedChatInterfaceProps) {
   const [model, setModel] = useState(allModels[0].id);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [hasSubmittedFirstMessage, setHasSubmittedFirstMessage] = useState(false);
   const { isAuthenticated } = useAuthContext();
+  
+  // Use external mobile state if provided, otherwise use internal hook
+  const internalMobileState = useMobileSidebar();
+  const isMobile = externalIsMobile ?? internalMobileState.isMobile;
+  const isMobileSidebarOpen = externalIsMobileSidebarOpen ?? internalMobileState.isMobileSidebarOpen;
+  const setIsMobileSidebarOpen = externalOnMobileSidebarOpenChange ?? internalMobileState.setIsMobileSidebarOpen;
+
+  // Note: conversations data is used by parent components via the hook
 
   const {
     messages,
@@ -140,14 +180,27 @@ export function EnhancedChatInterface({ className }: EnhancedChatInterfaceProps)
 
   return (
     <div className={cn('flex h-full', className)}>
-      {/* Sidebar */}
-      {showSidebar && (
+      {/* Desktop Sidebar */}
+      {showSidebar && !isMobile && (
         <ConversationSidebar
           currentConversationId={currentConversationId}
           onConversationSelect={handleConversationSelect}
           onNewConversation={handleNewConversation}
           isCollapsed={sidebarCollapsed}
           onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+          isMobile={false}
+        />
+      )}
+
+      {/* Mobile Sidebar */}
+      {showSidebar && isMobile && (
+        <ConversationSidebar
+          currentConversationId={currentConversationId}
+          onConversationSelect={handleConversationSelect}
+          onNewConversation={handleNewConversation}
+          isMobile={true}
+          isOpen={isMobileSidebarOpen}
+          onOpenChange={setIsMobileSidebarOpen}
         />
       )}
 
@@ -155,7 +208,7 @@ export function EnhancedChatInterface({ className }: EnhancedChatInterfaceProps)
       <div className="flex-1 flex flex-col min-w-0">
         {!shouldShowConversation ? (
           // Empty state with centered prompt input
-          <div className="flex-1 flex flex-col items-center justify-center p-3 sm:p-4 min-h-0">
+          <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 min-h-0 px-4 sm:px-6">
             <div className="w-full max-w-2xl transform transition-all duration-700 ease-out">
               <TypingTitle 
                 models={modelNames} 

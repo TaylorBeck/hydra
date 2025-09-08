@@ -196,4 +196,33 @@
   .overflow-x-hidden {
     overflow-x: hidden;
   }
+  
+  /* Mobile app-like improvements */
+  @media (max-width: 640px) {
+    body {
+      /* Prevent overscroll bounce on iOS */
+      overscroll-behavior: none;
+      /* Prevent pull-to-refresh */
+      overscroll-behavior-y: contain;
+      /* Improve touch scrolling */
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Prevent zoom on input focus */
+    input, textarea, select {
+      font-size: 16px !important;
+    }
+    
+    /* Add native app-like touch feedback */
+    button, [role="button"] {
+      -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+      tap-highlight-color: rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Improve button press feedback */
+    button:active, [role="button"]:active {
+      transform: scale(0.98);
+      transition: transform 0.1s ease-in-out;
+    }
+  }
 }

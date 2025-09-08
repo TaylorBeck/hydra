@@ -29,7 +29,11 @@ export function AuthButton() {
   const [authMode, setAuthMode] = useState<AuthMode>('login');
 
   const handleSignOut = async () => {
-    await signOut();
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
   };
 
   const handleAuthSuccess = () => {
