@@ -155,7 +155,7 @@ export function EnhancedChatInterface({ className }: EnhancedChatInterfaceProps)
       <div className="flex-1 flex flex-col min-w-0">
         {!shouldShowConversation ? (
           // Empty state with centered prompt input
-          <div className="flex-1 flex flex-col items-center justify-center p-4">
+          <div className="flex-1 flex flex-col items-center justify-center p-3 sm:p-4 min-h-0">
             <div className="w-full max-w-2xl transform transition-all duration-700 ease-out">
               <TypingTitle 
                 models={modelNames} 
@@ -169,15 +169,15 @@ export function EnhancedChatInterface({ className }: EnhancedChatInterfaceProps)
                   value={input}
                   placeholder="Ask anything... (Shift + Enter for new line)"
                   onChange={handleInputChange}
-                  className="text-sm sm:text-base px-4 sm:px-6 py-3 sm:py-4"
+                  className="text-sm sm:text-base px-3 sm:px-4 lg:px-6 py-2.5 sm:py-3 lg:py-4"
                 />
-                <PromptInputToolbar className="px-3 sm:px-4 py-2 sm:py-3 bg-slate-50/50 dark:bg-slate-800/50 transition-colors duration-200">
+                <PromptInputToolbar className="px-2.5 sm:px-3 lg:px-4 py-1.5 sm:py-2 lg:py-3 bg-slate-50/50 dark:bg-slate-800/50 transition-colors duration-200">
                   <PromptInputTools>
                     <PromptInputModelSelect
                       onValueChange={(value) => setModel(value)}
                       value={model}
                     >
-                      <PromptInputModelSelectTrigger className="cursor-pointer rounded-lg !rounded-bl-lg border border-slate-200 bg-white px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors duration-200">
+                      <PromptInputModelSelectTrigger className="cursor-pointer rounded-lg !rounded-bl-lg border border-slate-200 bg-white px-1.5 sm:px-2 lg:px-3 py-1 sm:py-1.5 lg:py-2 text-xs sm:text-sm font-medium shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors duration-200">
                         <PromptInputModelSelectValue />
                       </PromptInputModelSelectTrigger>
                       <PromptInputModelSelectContent className="min-w-[250px] sm:min-w-[280px]">
@@ -215,7 +215,7 @@ export function EnhancedChatInterface({ className }: EnhancedChatInterfaceProps)
             )}
 
             <Conversation className="flex-1">
-              <ConversationContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+              <ConversationContent className="space-y-3 sm:space-y-4 lg:space-y-6 p-3 sm:p-4 lg:p-6">
                 {messages.map((message) => (
                   <Message from={message.role} key={message.id} className="group">
                     <MessageContent className={`
@@ -223,7 +223,7 @@ export function EnhancedChatInterface({ className }: EnhancedChatInterfaceProps)
                         ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-600/25' 
                         : 'bg-white shadow-sm border border-slate-200 dark:bg-slate-800 dark:border-slate-700'
                       }
-                      rounded-2xl px-4 sm:px-6 py-3 sm:py-4 max-w-[90%] sm:max-w-[85%] transition-colors duration-200
+                      rounded-2xl px-3 sm:px-4 lg:px-6 py-2.5 sm:py-3 lg:py-4 max-w-[95%] sm:max-w-[90%] lg:max-w-[85%] transition-colors duration-200
                     `}>
                       {message.role === 'user' ? (
                         <div className="whitespace-pre-wrap">{getMessageContent(message)}</div>
@@ -237,7 +237,7 @@ export function EnhancedChatInterface({ className }: EnhancedChatInterfaceProps)
                 {/* Loading indicator for streaming */}
                 {isLoading && (
                   <Message from="assistant" className="group">
-                    <MessageContent className="bg-white shadow-sm border border-slate-200 dark:bg-slate-800 dark:border-slate-700 rounded-2xl px-4 sm:px-6 py-3 sm:py-4 max-w-[90%] sm:max-w-[85%] transition-colors duration-200">
+                    <MessageContent className="bg-white shadow-sm border border-slate-200 dark:bg-slate-800 dark:border-slate-700 rounded-2xl px-3 sm:px-4 lg:px-6 py-2.5 sm:py-3 lg:py-4 max-w-[95%] sm:max-w-[90%] lg:max-w-[85%] transition-colors duration-200">
                       <Loader />
                     </MessageContent>
                   </Message>
@@ -248,7 +248,7 @@ export function EnhancedChatInterface({ className }: EnhancedChatInterfaceProps)
 
             {/* Bottom prompt input */}
             <div className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-              <div className="p-4 sm:p-6">
+              <div className="p-3 sm:p-4 lg:p-6">
                 <PromptInput 
                   onSubmit={onSubmit} 
                   className="shadow-xl shadow-slate-900/5 border-slate-200 dark:border-slate-700 dark:shadow-slate-950/20 transition-all duration-300"
@@ -257,15 +257,15 @@ export function EnhancedChatInterface({ className }: EnhancedChatInterfaceProps)
                     value={input}
                     placeholder="Ask anything... (Shift + Enter for new line)"
                     onChange={handleInputChange}
-                    className="text-sm sm:text-base px-4 sm:px-6 py-3 sm:py-4"
+                    className="text-sm sm:text-base px-3 sm:px-4 lg:px-6 py-2.5 sm:py-3 lg:py-4"
                   />
-                  <PromptInputToolbar className="px-3 sm:px-4 py-2 sm:py-3 bg-slate-50/50 dark:bg-slate-800/50 transition-colors duration-200">
+                  <PromptInputToolbar className="px-2.5 sm:px-3 lg:px-4 py-1.5 sm:py-2 lg:py-3 bg-slate-50/50 dark:bg-slate-800/50 transition-colors duration-200">
                     <PromptInputTools>
                       <PromptInputModelSelect
                         onValueChange={(value) => setModel(value)}
                         value={model}
                       >
-                        <PromptInputModelSelectTrigger className="cursor-pointer rounded-lg !rounded-bl-lg border border-slate-200 bg-white px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors duration-200">
+                        <PromptInputModelSelectTrigger className="cursor-pointer rounded-lg !rounded-bl-lg border border-slate-200 bg-white px-1.5 sm:px-2 lg:px-3 py-1 sm:py-1.5 lg:py-2 text-xs sm:text-sm font-medium shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors duration-200">
                           <PromptInputModelSelectValue />
                         </PromptInputModelSelectTrigger>
                         <PromptInputModelSelectContent className="min-w-[250px] sm:min-w-[280px]">

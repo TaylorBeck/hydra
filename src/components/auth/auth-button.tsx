@@ -75,7 +75,7 @@ export function AuthButton() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="justify-start h-8"
+                className="justify-start h-8 cursor-pointer"
                 onClick={() => {
                   // TODO: Open profile settings
                 }}
@@ -86,7 +86,7 @@ export function AuthButton() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="justify-start h-8"
+                className="justify-start h-8 cursor-pointer"
                 onClick={() => {
                   // TODO: Open settings modal
                 }}
@@ -97,7 +97,7 @@ export function AuthButton() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="justify-start h-8 text-destructive hover:text-destructive"
+                className="justify-start h-8 text-destructive hover:text-destructive cursor-pointer"
                 onClick={handleSignOut}
               >
                 <LogOut className="mr-2 h-4 w-4" />

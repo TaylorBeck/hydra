@@ -180,4 +180,20 @@
   .animate-modal-out {
     animation: modal-out 0.15s cubic-bezier(0.4, 0, 1, 1);
   }
+  
+  /* Optimize for mobile viewport units */
+  @supports (height: 100dvh) {
+    .min-h-screen {
+      min-height: 100dvh;
+    }
+    
+    .h-screen {
+      height: 100dvh;
+    }
+  }
+  
+  /* Prevent horizontal overflow on mobile */
+  .overflow-x-hidden {
+    overflow-x: hidden;
+  }
 }

@@ -37,13 +37,13 @@ export default function Chat() {
   const [model] = useState(allModels[0].id);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800 transition-colors duration-500">
+    <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800 transition-colors duration-500">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-slate-200/50 bg-white/80 backdrop-blur-xl dark:border-slate-800/50 dark:bg-slate-950/80 transition-colors duration-300">
-        <div className="mx-auto flex h-16 max-w-full items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-3">
-            <div className="relative rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 p-1.5 dark:from-slate-800 dark:to-slate-700 transition-all duration-300">
-              <HydraLogo width={32} height={32} />
+        <div className="mx-auto flex h-14 sm:h-16 max-w-full items-center justify-between px-3 sm:px-4 lg:px-6">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="relative rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 p-1 sm:p-1.5 dark:from-slate-800 dark:to-slate-700 transition-all duration-300">
+              <HydraLogo width={28} height={28} className="sm:w-8 sm:h-8" />
             </div>
             <div className="hidden sm:block">
               <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
@@ -54,15 +54,15 @@ export default function Chat() {
               </p>
             </div>
             <div className="sm:hidden">
-              <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                Hydra
+              <h1 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                Hyra
               </h1>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <div className="rounded-full bg-emerald-100 px-2 sm:px-3 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
               <span className="hidden sm:inline">{allModels.find(m => m.id === model)?.name || 'GPT-4o'}</span>
-              <span className="sm:hidden !ml-2">{allModels.find(m => m.id === model)?.provider || 'OpenAI'}</span>
+              <span className="sm:hidden">{allModels.find(m => m.id === model)?.provider || 'OpenAI'}</span>
             </div>
             <EnhancedSettingsModal />
             <AuthButton />
@@ -72,7 +72,7 @@ export default function Chat() {
       </header>
 
       {/* Main Content */}
-      <div className="h-[calc(100vh-4rem)]">
+      <div className="h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-4rem)]">
         <EnhancedChatInterface />
       </div>
     </div>

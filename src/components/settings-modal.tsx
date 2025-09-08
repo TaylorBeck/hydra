@@ -146,7 +146,7 @@ export function SettingsModal() {
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors duration-200"
+          className="h-9 w-9 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors duration-200 cursor-pointer"
         >
           <Settings className="h-4 w-4" />
           <span className="sr-only">Settings</span>
