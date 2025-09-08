@@ -1,6 +1,6 @@
-# Hydra AI Chatbot 🐍
+<img width="400" height="124" alt="banner-h" src="https://github.com/user-attachments/assets/dfe4e561-ffb7-4702-b25a-fa16c40c20d2" />
 
-A modern, multi-provider AI chatbot interface built with Next.js 15, featuring support for multiple LLM providers and a beautiful, responsive UI.
+A modern, multi-provider AI chatbot interface built with Next.js 15, featuring support for multiple LLM providers with a responsive UI.
 
 ## ✨ Features
 
