@@ -42,6 +42,7 @@ export const PromptInputTextarea = ({
   onChange,
   className,
   placeholder = 'What would you like to know?',
+  value,
   ...props
 }: PromptInputTextareaProps) => {
   const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
@@ -74,6 +75,7 @@ export const PromptInputTextarea = ({
         className
       )}
       name="message"
+      value={value}
       onChange={(e) => {
         onChange?.(e);
       }}

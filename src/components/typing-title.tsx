@@ -1,0 +1,75 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+
+interface TypingTitleProps {
+  models: string[];
+  className?: string;
+}
+
+export function TypingTitle({ models, className = '' }: TypingTitleProps) {
+  const [currentModelIndex, setCurrentModelIndex] = useState(0);
+  const [displayText, setDisplayText] = useState('');
+  const [isTyping, setIsTyping] = useState(true);
+  const [showCursor, setShowCursor] = useState(true);
+
+  const prefix = "Hi, I'm ";
+  const currentModel = models[currentModelIndex];
+
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+
+    if (isTyping) {
+      // Typing phase
+      const targetText = prefix + currentModel;
+      if (displayText.length < targetText.length) {
+        timeout = setTimeout(() => {
+          setDisplayText(targetText.slice(0, displayText.length + 1));
+        }, 100); // Typing speed
+      } else {
+        // Finished typing, wait before starting to delete
+        timeout = setTimeout(() => {
+          setIsTyping(false);
+        }, 2000); // Pause duration
+      }
+    } else {
+      // Deleting phase
+      if (displayText.length > prefix.length) {
+        timeout = setTimeout(() => {
+          setDisplayText(displayText.slice(0, -1));
+        }, 50); // Deleting speed (faster than typing)
+      } else {
+        // Finished deleting model name, move to next model
+        setCurrentModelIndex((prev) => (prev + 1) % models.length);
+        setIsTyping(true);
+      }
+    }
+
+    return () => clearTimeout(timeout);
+  }, [displayText, isTyping, currentModel, models, prefix]);
+
+  // Cursor blinking effect
+  useEffect(() => {
+    const cursorInterval = setInterval(() => {
+      setShowCursor(prev => !prev);
+    }, 530); // Cursor blink speed
+
+    return () => clearInterval(cursorInterval);
+  }, []);
+
+  return (
+    <div className={`text-center mb-8 ${className}`}>
+      <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+        {displayText}
+        <span 
+          className={`inline-block w-0.5 h-8 sm:h-10 lg:h-12 bg-blue-600 ml-1 transition-opacity duration-100 ${
+            showCursor ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
+      </h1>
+      <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-400 mt-4 font-medium">
+        Choose your AI assistant and start chatting
+      </p>
+    </div>
+  );
+}
