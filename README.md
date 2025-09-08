@@ -2,6 +2,8 @@
 
 A modern, multi-provider AI chatbot interface built with Next.js 15, featuring support for multiple LLM providers with a responsive UI.
 
+<img width="573" height="315" alt="ss" src="https://github.com/user-attachments/assets/a7f770e1-a0c2-4caf-90f5-7975f3ed4fa9" />
+
 ## ✨ Features
 
 - **Multi-Provider Support**: Chat with models from OpenAI, Anthropic, Google, and Mistral
