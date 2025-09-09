@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Settings, Eye, EyeOff, Save, RotateCcw, Loader2 } from 'lucide-react';
+import { Settings, Eye, EyeOff, Save, RotateCcw, Loader2, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -132,6 +132,7 @@ export function EnhancedSettingsModal() {
   const [open, setOpen] = React.useState(false);
   const [showApiKeys, setShowApiKeys] = React.useState<Record<string, boolean>>({});
   const [showFormAnyway, setShowFormAnyway] = React.useState(false);
+  const [localSettings, setLocalSettings] = React.useState<SettingsFormData | null>(null);
   const { user, isAuthenticated } = useAuthContext();
   const queryClient = useQueryClient();
 
@@ -148,7 +149,53 @@ export function EnhancedSettingsModal() {
     defaultValues: DEFAULT_SETTINGS,
   });
 
-  // Fetch user settings
+  // Load local settings on mount
+  React.useEffect(() => {
+    const savedSettings = localStorage.getItem('hydra-settings');
+    if (savedSettings) {
+      try {
+        const parsed = JSON.parse(savedSettings);
+        const formData: SettingsFormData = {
+          apiKeys: {
+            openai: parsed.apiKeys?.openai || '',
+            anthropic: parsed.apiKeys?.anthropic || '',
+            google: parsed.apiKeys?.google || '',
+            mistral: parsed.apiKeys?.mistral || '',
+            groq: parsed.apiKeys?.groq || '',
+            xai: parsed.apiKeys?.xai || '',
+            deepseek: parsed.apiKeys?.deepseek || '',
+            cerebras: parsed.apiKeys?.cerebras || '',
+            perplexity: parsed.apiKeys?.perplexity || '',
+          },
+          modelSettings: {
+            temperature: parsed.modelSettings?.temperature || 0.7,
+            maxOutputTokens: parsed.modelSettings?.maxOutputTokens || 4096,
+            topP: parsed.modelSettings?.topP || 1.0,
+            topK: parsed.modelSettings?.topK || 0,
+            presencePenalty: parsed.modelSettings?.presencePenalty || 0,
+            frequencyPenalty: parsed.modelSettings?.frequencyPenalty || 0,
+            maxRetries: parsed.modelSettings?.maxRetries || 2,
+            stopSequences: parsed.modelSettings?.stopSequences || '',
+          },
+          preferences: {
+            preferredModel: parsed.preferences?.preferredModel || 'gpt-4o',
+            theme: parsed.preferences?.theme || 'system',
+          },
+        };
+        setLocalSettings(formData);
+        reset(formData);
+      } catch (error) {
+        console.error('Failed to parse saved settings:', error);
+        setLocalSettings(DEFAULT_SETTINGS);
+        reset(DEFAULT_SETTINGS);
+      }
+    } else {
+      setLocalSettings(DEFAULT_SETTINGS);
+      reset(DEFAULT_SETTINGS);
+    }
+  }, [reset]);
+
+  // Fetch user settings (only if authenticated)
   const { data: userSettings, isLoading, error } = useQuery({
     queryKey: ['user-settings', user?.id],
     queryFn: () => fetchUserSettings(user!.id),
@@ -158,7 +205,30 @@ export function EnhancedSettingsModal() {
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
-  // Update settings mutation
+  // Save settings function
+  const saveSettings = (settings: SettingsFormData) => {
+    // Always save to localStorage
+    const localStorageData = {
+      apiKeys: settings.apiKeys,
+      modelSettings: settings.modelSettings,
+      preferences: settings.preferences,
+    };
+    
+    localStorage.setItem('hydra-settings', JSON.stringify(localStorageData));
+    setLocalSettings(settings);
+    
+    // Dispatch event for other components
+    window.dispatchEvent(new CustomEvent('settings-updated', { detail: localStorageData }));
+    
+    if (isAuthenticated && user?.id) {
+      // Also save to Supabase if authenticated
+      return updateSettingsMutation.mutate(settings);
+    } else {
+      toast.success('Settings saved locally!');
+    }
+  };
+
+  // Update settings mutation (for authenticated users)
   const updateSettingsMutation = useMutation({
     mutationFn: (settings: SettingsFormData) => {
       if (!user?.id) throw new Error('User not authenticated');
@@ -194,12 +264,12 @@ export function EnhancedSettingsModal() {
       return updateUserSettings(user.id, dbSettings);
     },
     onSuccess: () => {
-      toast.success('Settings saved successfully!');
+      toast.success('Settings saved and synced to your account!');
       queryClient.invalidateQueries({ queryKey: ['user-settings', user?.id] });
     },
     onError: (error) => {
-      console.error('Failed to save settings:', error);
-      toast.error('Failed to save settings. Please try again.');
+      console.error('Failed to sync settings to account:', error);
+      toast.error('Settings saved locally, but failed to sync to your account.');
     },
   });
 
@@ -209,9 +279,9 @@ export function EnhancedSettingsModal() {
     toast.info('Settings reset to defaults');
   };
 
-  // Load user settings into form when data is available or on error
+  // Load user settings into form when data is available (for authenticated users)
   React.useEffect(() => {
-    if (userSettings) {
+    if (isAuthenticated && userSettings) {
       const formData: SettingsFormData = {
         apiKeys: {
           openai: userSettings.openai_api_key || '',
@@ -240,25 +310,39 @@ export function EnhancedSettingsModal() {
         },
       };
       
-      reset(formData);
-    } else if (error) {
-      // If there's an error loading settings, use defaults
-      console.warn('Failed to load user settings, using defaults:', error);
-      reset(DEFAULT_SETTINGS);
+      // Merge with local settings, preferring server settings for authenticated users
+      const mergedSettings = { ...localSettings, ...formData };
+      setLocalSettings(mergedSettings);
+      reset(mergedSettings);
+      
+      // Also update localStorage to keep in sync
+      localStorage.setItem('hydra-settings', JSON.stringify(mergedSettings));
+    } else if (isAuthenticated && error) {
+      // If there's an error loading settings for authenticated user, keep local settings
+      console.warn('Failed to load user settings, using local settings:', error);
+      if (localSettings) {
+        reset(localSettings);
+      }
     }
-  }, [userSettings, error, reset]);
+  }, [userSettings, error, reset, isAuthenticated, localSettings]);
 
-  // Timeout to show form anyway after 5 seconds
+  // Timeout to show form anyway after 5 seconds (only for authenticated users)
   React.useEffect(() => {
+    if (!isAuthenticated) return;
+    
     const timer = setTimeout(() => {
       if (isLoading && !userSettings && !error) {
         setShowFormAnyway(true);
-        reset(DEFAULT_SETTINGS);
+        if (localSettings) {
+          reset(localSettings);
+        } else {
+          reset(DEFAULT_SETTINGS);
+        }
       }
     }, 5000);
 
     return () => clearTimeout(timer);
-  }, [isLoading, userSettings, error, reset]);
+  }, [isLoading, userSettings, error, reset, isAuthenticated, localSettings]);
 
   const toggleApiKeyVisibility = (provider: string) => {
     setShowApiKeys(prev => ({
@@ -268,7 +352,7 @@ export function EnhancedSettingsModal() {
   };
 
   const onSubmit = (data: SettingsFormData) => {
-    updateSettingsMutation.mutate(data);
+    saveSettings(data);
   };
 
   const watchedTemperature = watch('modelSettings.temperature');
@@ -276,39 +360,6 @@ export function EnhancedSettingsModal() {
   const watchedPresencePenalty = watch('modelSettings.presencePenalty');
   const watchedFrequencyPenalty = watch('modelSettings.frequencyPenalty');
 
-  // Show login prompt if not authenticated
-  if (!isAuthenticated) {
-    return (
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors duration-200 cursor-pointer"
-          >
-            <Settings className="h-4 w-4" />
-            <span className="sr-only">Settings</span>
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Sign in Required</DialogTitle>
-            <DialogDescription>
-              Please sign in to access your personalized settings and save your preferences.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="text-center py-4">
-            <p className="text-sm text-muted-foreground mb-4">
-              Your settings will be synced across all your devices when you sign in.
-            </p>
-            <Button onClick={() => setOpen(false)}>
-              Close
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -328,21 +379,33 @@ export function EnhancedSettingsModal() {
         <DialogHeader className="flex-shrink-0 pb-4">
           <DialogTitle className="text-slate-900 dark:text-slate-100">Settings</DialogTitle>
           <DialogDescription className="text-slate-600 dark:text-slate-400">
-            Configure your API keys and model settings. Changes are automatically synced to your account.
+            Configure your API keys and model settings.
+            {isAuthenticated ? ' Changes are automatically synced to your account.' : ' Settings are saved locally.'}
           </DialogDescription>
+          
+          {!isAuthenticated && (
+            <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg mt-3 w-fit pr-6">
+              <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+              <div className="text-sm">
+                <p className="text-blue-700 dark:text-blue-300">
+                  Your settings are only saved for this session. Sign in now to sync across devices.
+                </p>
+              </div>
+            </div>
+          )}
         </DialogHeader>
 
-        {isLoading && !error && !showFormAnyway ? (
+        {isAuthenticated && isLoading && !error && !showFormAnyway ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin" />
             <span className="ml-2 text-sm text-muted-foreground">Loading settings...</span>
           </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0">
-            {error && (
+            {isAuthenticated && error && (
               <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
                 <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                  Unable to load your saved settings. Using default values. You can still modify and save your settings.
+                  Unable to load your saved settings from your account. Using local settings. You can still modify and save your settings.
                 </p>
               </div>
             )}
@@ -524,15 +587,15 @@ export function EnhancedSettingsModal() {
               </Button>
               <Button
                 type="submit"
-                disabled={!isDirty || updateSettingsMutation.isPending}
+                disabled={!isDirty || (isAuthenticated && updateSettingsMutation.isPending)}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
-                {updateSettingsMutation.isPending ? (
+                {isAuthenticated && updateSettingsMutation.isPending ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
                   <Save className="h-4 w-4 mr-2" />
                 )}
-                Save Settings
+                {isAuthenticated ? 'Save & Sync Settings' : 'Save Settings Locally'}
               </Button>
             </div>
           </form>

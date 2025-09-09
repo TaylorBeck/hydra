@@ -162,9 +162,12 @@ const archiveConversation = async (id: string, archived: boolean): Promise<Conve
 export function useConversations(filters?: ConversationFilters) {
   const { user, isAuthenticated } = useAuthContext();
 
-  return useQuery({
+  return useQuery<ConversationListItem[]>({
     queryKey: ['conversations', user?.id, filters],
-    queryFn: () => fetchConversations(user!.id, filters),
+    queryFn: async () => {
+      if (!user?.id) throw new Error('User ID is required');
+      return fetchConversations(user.id, filters);
+    },
     enabled: isAuthenticated && !!user?.id,
     staleTime: 30 * 1000, // 30 seconds
     retry: 2,

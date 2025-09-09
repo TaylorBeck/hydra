@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Settings, Eye, EyeOff, Save, RotateCcw } from 'lucide-react';
+import { Settings, Eye, EyeOff, Save, RotateCcw, Info } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -14,58 +14,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
-interface ApiKeys {
-  openai: string;
-  anthropic: string;
-  google: string;
-  mistral: string;
-  groq: string;
-  xai: string;
-  deepseek: string;
-  cerebras: string;
-  perplexity: string;
-}
-
-interface ModelSettings {
-  temperature: number;
-  maxOutputTokens: number;
-  topP: number;
-  topK: number;
-  presencePenalty: number;
-  frequencyPenalty: number;
-  maxRetries: number;
-  stopSequences: string;
-}
-
-interface Settings {
-  apiKeys: ApiKeys;
-  modelSettings: ModelSettings;
-}
-
-const DEFAULT_SETTINGS: Settings = {
-  apiKeys: {
-    openai: '',
-    anthropic: '',
-    google: '',
-    mistral: '',
-    groq: '',
-    xai: '',
-    deepseek: '',
-    cerebras: '',
-    perplexity: '',
-  },
-  modelSettings: {
-    temperature: 0.7,
-    maxOutputTokens: 4096,
-    topP: 1.0,
-    topK: 0,
-    presencePenalty: 0,
-    frequencyPenalty: 0,
-    maxRetries: 2,
-    stopSequences: '',
-  },
-};
+import { useSettings } from '@/hooks/use-settings';
+import type { ApiKeys, ModelSettings } from '@/hooks/use-settings';
+import { useAuthContext } from '@/components/auth/auth-provider';
 
 const PROVIDER_LABELS = {
   openai: 'OpenAI',
@@ -81,42 +32,41 @@ const PROVIDER_LABELS = {
 
 export function SettingsModal() {
   const [open, setOpen] = React.useState(false);
-  const [settings, setSettings] = React.useState<Settings>(DEFAULT_SETTINGS);
   const [showApiKeys, setShowApiKeys] = React.useState<Record<string, boolean>>({});
   const [hasChanges, setHasChanges] = React.useState(false);
+  
+  const settings = useSettings();
+  const { isAuthenticated } = useAuthContext();
+  
+  // Local settings state
+  const [localSettings, setLocalSettings] = React.useState(settings);
 
-  // Load settings from localStorage on mount
+  // Update local settings when hook settings change
   React.useEffect(() => {
-    const savedSettings = localStorage.getItem('hydra-settings');
-    if (savedSettings) {
-      try {
-        const parsed = JSON.parse(savedSettings);
-        setSettings({ ...DEFAULT_SETTINGS, ...parsed });
-      } catch (error) {
-        console.error('Failed to parse saved settings:', error);
-      }
-    }
-  }, []);
+    setLocalSettings(settings);
+  }, [settings]);
 
   const handleApiKeyChange = (provider: keyof ApiKeys, value: string) => {
-    setSettings(prev => ({
-      ...prev,
+    const newSettings = {
+      ...localSettings,
       apiKeys: {
-        ...prev.apiKeys,
+        ...localSettings.apiKeys,
         [provider]: value,
       },
-    }));
+    };
+    setLocalSettings(newSettings);
     setHasChanges(true);
   };
 
   const handleModelSettingChange = (setting: keyof ModelSettings, value: string | number) => {
-    setSettings(prev => ({
-      ...prev,
+    const newSettings = {
+      ...localSettings,
       modelSettings: {
-        ...prev.modelSettings,
+        ...localSettings.modelSettings,
         [setting]: value,
       },
-    }));
+    };
+    setLocalSettings(newSettings);
     setHasChanges(true);
   };
 
@@ -127,16 +77,42 @@ export function SettingsModal() {
     }));
   };
 
-  const saveSettings = () => {
-    localStorage.setItem('hydra-settings', JSON.stringify(settings));
+  const handleSaveSettings = () => {
+    localStorage.setItem('hydra-settings', JSON.stringify(localSettings));
+    window.dispatchEvent(new CustomEvent('settings-updated', { detail: localSettings }));
     setHasChanges(false);
     
-    // Dispatch a custom event to notify other parts of the app
-    window.dispatchEvent(new CustomEvent('settings-updated', { detail: settings }));
+    // TODO: If authenticated, also sync to Supabase
+    if (isAuthenticated) {
+      console.log('User is authenticated - settings could be synced to Supabase');
+    }
   };
 
-  const resetSettings = () => {
-    setSettings(DEFAULT_SETTINGS);
+  const handleResetSettings = () => {
+    const defaultSettings = {
+      apiKeys: {
+        openai: '',
+        anthropic: '',
+        google: '',
+        mistral: '',
+        groq: '',
+        xai: '',
+        deepseek: '',
+        cerebras: '',
+        perplexity: '',
+      },
+      modelSettings: {
+        temperature: 0.7,
+        maxOutputTokens: 4096,
+        topP: 1.0,
+        topK: 0,
+        presencePenalty: 0,
+        frequencyPenalty: 0,
+        maxRetries: 2,
+        stopSequences: '',
+      },
+    };
+    setLocalSettings(defaultSettings);
     setHasChanges(true);
   };
 
@@ -158,6 +134,17 @@ export function SettingsModal() {
           <DialogDescription className="text-slate-600 dark:text-slate-400">
             Configure API keys and model settings for your AI providers.
           </DialogDescription>
+          
+          {!isAuthenticated && (
+            <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg w-fit pr-6">
+              <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+              <div className="text-sm">
+                <p className="text-blue-700 dark:text-blue-300">
+                  Your settings are only saved for this session. Sign in now to sync across devices.
+                </p>
+              </div>
+            </div>
+          )}
         </DialogHeader>
 
         <ScrollArea className="max-h-[60vh]">
@@ -167,23 +154,23 @@ export function SettingsModal() {
               <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">API Keys</h3>
               <div className="space-y-4">
                 {Object.entries(PROVIDER_LABELS).map(([provider, label]) => (
-                  <div key={provider} className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <div key={provider} className="space-y-3">
+                    <label className="text-sm font-medium leading-none text-slate-700 dark:text-slate-300">
                       {label} API Key
                     </label>
                     <div className="relative">
                       <Input
                         type={showApiKeys[provider] ? 'text' : 'password'}
-                        value={settings.apiKeys[provider as keyof ApiKeys]}
+                        value={localSettings.apiKeys[provider as keyof ApiKeys]}
                         onChange={(e) => handleApiKeyChange(provider as keyof ApiKeys, e.target.value)}
                         placeholder={`Enter your ${label} API key`}
-                        className="pr-10 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
+                        className="pr-10 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 h-11 focus-visible:ring-offset-1"
                       />
                       <Button
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                        className="absolute right-0 top-0 h-11 px-3 hover:bg-transparent focus-visible:ring-offset-1"
                         onClick={() => toggleApiKeyVisibility(provider)}
                       >
                         {showApiKeys[provider] ? (
@@ -204,14 +191,14 @@ export function SettingsModal() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Temperature ({settings.modelSettings.temperature})
+                    Temperature ({localSettings.modelSettings.temperature})
                   </label>
                   <input
                     type="range"
                     min="0"
                     max="2"
                     step="0.1"
-                    value={settings.modelSettings.temperature}
+                    value={localSettings.modelSettings.temperature}
                     onChange={(e) => handleModelSettingChange('temperature', parseFloat(e.target.value))}
                     className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
                   />
@@ -228,22 +215,22 @@ export function SettingsModal() {
                     type="number"
                     min="1"
                     max="100000"
-                    value={settings.modelSettings.maxOutputTokens}
+                    value={localSettings.modelSettings.maxOutputTokens}
                     onChange={(e) => handleModelSettingChange('maxOutputTokens', parseInt(e.target.value) || 4096)}
-                    className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
+                    className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 h-11 focus-visible:ring-offset-1"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Top P ({settings.modelSettings.topP})
+                    Top P ({localSettings.modelSettings.topP})
                   </label>
                   <input
                     type="range"
                     min="0"
                     max="1"
                     step="0.1"
-                    value={settings.modelSettings.topP}
+                    value={localSettings.modelSettings.topP}
                     onChange={(e) => handleModelSettingChange('topP', parseFloat(e.target.value))}
                     className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
                   />
@@ -260,22 +247,22 @@ export function SettingsModal() {
                     type="number"
                     min="0"
                     max="100"
-                    value={settings.modelSettings.topK}
+                    value={localSettings.modelSettings.topK}
                     onChange={(e) => handleModelSettingChange('topK', parseInt(e.target.value) || 0)}
-                    className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
+                    className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 h-11 focus-visible:ring-offset-1"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Presence Penalty ({settings.modelSettings.presencePenalty})
+                    Presence Penalty ({localSettings.modelSettings.presencePenalty})
                   </label>
                   <input
                     type="range"
                     min="-2"
                     max="2"
                     step="0.1"
-                    value={settings.modelSettings.presencePenalty}
+                    value={localSettings.modelSettings.presencePenalty}
                     onChange={(e) => handleModelSettingChange('presencePenalty', parseFloat(e.target.value))}
                     className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
                   />
@@ -283,14 +270,14 @@ export function SettingsModal() {
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Frequency Penalty ({settings.modelSettings.frequencyPenalty})
+                    Frequency Penalty ({localSettings.modelSettings.frequencyPenalty})
                   </label>
                   <input
                     type="range"
                     min="-2"
                     max="2"
                     step="0.1"
-                    value={settings.modelSettings.frequencyPenalty}
+                    value={localSettings.modelSettings.frequencyPenalty}
                     onChange={(e) => handleModelSettingChange('frequencyPenalty', parseFloat(e.target.value))}
                     className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
                   />
@@ -304,9 +291,9 @@ export function SettingsModal() {
                     type="number"
                     min="0"
                     max="10"
-                    value={settings.modelSettings.maxRetries}
+                    value={localSettings.modelSettings.maxRetries}
                     onChange={(e) => handleModelSettingChange('maxRetries', parseInt(e.target.value) || 2)}
-                    className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
+                    className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 h-11 focus-visible:ring-offset-1"
                   />
                 </div>
 
@@ -315,7 +302,7 @@ export function SettingsModal() {
                     Stop Sequences
                   </label>
                   <Textarea
-                    value={settings.modelSettings.stopSequences}
+                    value={localSettings.modelSettings.stopSequences}
                     onChange={(e) => handleModelSettingChange('stopSequences', e.target.value)}
                     placeholder="Enter stop sequences separated by commas"
                     className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
@@ -333,20 +320,27 @@ export function SettingsModal() {
         <div className="flex justify-between pt-4 border-t border-slate-200 dark:border-slate-700">
           <Button
             variant="outline"
-            onClick={resetSettings}
-            className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300"
+            onClick={handleResetSettings}
+            className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 h-11"
           >
             <RotateCcw className="h-4 w-4 mr-2" />
             Reset to Defaults
           </Button>
-          <Button
-            onClick={saveSettings}
-            disabled={!hasChanges}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <Save className="h-4 w-4 mr-2" />
-            Save Settings
-          </Button>
+          <div className="flex items-center gap-3">
+            {!isAuthenticated && hasChanges && (
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Settings saved locally
+              </p>
+            )}
+            <Button
+              onClick={handleSaveSettings}
+              disabled={!hasChanges}
+              className="bg-blue-600 hover:bg-blue-700 text-white h-11"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {isAuthenticated ? 'Save Settings' : 'Save Locally'}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

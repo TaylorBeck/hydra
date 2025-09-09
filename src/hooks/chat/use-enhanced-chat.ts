@@ -130,7 +130,7 @@ export function useEnhancedChat({
   const [input, setInput] = useState('');
 
   // Enhanced chat hook with persistence
-  const { messages, sendMessage } = useChat({
+  const { messages, sendMessage, status } = useChat({
     onError: (error) => {
       console.error('Chat error:', error);
       toast.error('Failed to send message. Please try again.');
@@ -188,7 +188,7 @@ export function useEnhancedChat({
     messages,
     input,
     handleInputChange,
-    isLoading: isSending || state.isCreatingConversation,
+    isLoading: status === 'streaming' || isSending || state.isCreatingConversation,
     error: null, // We'll handle errors in our enhanced append function
 
     // Enhanced functions

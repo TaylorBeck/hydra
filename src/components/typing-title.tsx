@@ -59,7 +59,7 @@ export function TypingTitle({ models, className = '' }: TypingTitleProps) {
 
   return (
     <div className={`text-center mb-4 sm:mb-6 lg:mb-8 ${className}`}>
-      <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold text-slate-900 dark:text-slate-100 tracking-tight leading-tight">
+      <h1 className="text-3xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold text-slate-900 dark:text-slate-100 tracking-tight leading-tight">
         {displayText}
         <span 
           className={`inline-block w-0.5 h-6 sm:h-8 md:h-9 lg:h-10 xl:h-12 bg-blue-600 ml-1 transition-opacity duration-100 ${

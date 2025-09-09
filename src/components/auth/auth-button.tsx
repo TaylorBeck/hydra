@@ -10,10 +10,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '@/components/ui/hover-card';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Avatar } from '@/components/ui/avatar';
 import { useAuthContext } from './auth-provider';
 import { LoginForm } from './login-form';
@@ -28,7 +30,10 @@ export function AuthButton() {
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>('login');
 
-  const handleSignOut = async () => {
+  const handleSignOut = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     try {
       await signOut();
     } catch (error) {
@@ -46,8 +51,8 @@ export function AuthButton() {
 
   if (isAuthenticated) {
     return (
-      <HoverCard>
-        <HoverCardTrigger asChild>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             size="icon"
@@ -60,57 +65,51 @@ export function AuthButton() {
             </Avatar>
             <span className="sr-only">User menu</span>
           </Button>
-        </HoverCardTrigger>
-        <HoverCardContent className="w-64" align="end">
-          <div className="space-y-3">
-            <div className="flex items-center space-x-3">
-              <Avatar className="h-10 w-10">
-                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white font-medium">
-                  {displayName.charAt(0).toUpperCase()}
-                </div>
-              </Avatar>
-              <div className="space-y-1">
-                <p className="text-sm font-medium">{displayName}</p>
-                <p className="text-xs text-muted-foreground">{user?.email}</p>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-64" align="end">
+          <div className="flex items-center space-x-3 p-2">
+            <Avatar className="h-10 w-10">
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white font-medium">
+                {displayName.charAt(0).toUpperCase()}
               </div>
-            </div>
-            
-            <div className="flex flex-col space-y-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="justify-start h-8 cursor-pointer"
-                onClick={() => {
-                  // TODO: Open profile settings
-                }}
-              >
-                <User className="mr-2 h-4 w-4" />
-                Profile
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="justify-start h-8 cursor-pointer"
-                onClick={() => {
-                  // TODO: Open settings modal
-                }}
-              >
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="justify-start h-8 text-destructive hover:text-destructive cursor-pointer"
-                onClick={handleSignOut}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Sign out
-              </Button>
+            </Avatar>
+            <div className="space-y-1">
+              <p className="text-sm font-medium">{displayName}</p>
+              <p className="text-xs text-muted-foreground">{user?.email}</p>
             </div>
           </div>
-        </HoverCardContent>
-      </HoverCard>
+          
+          <DropdownMenuSeparator />
+          
+          <DropdownMenuItem
+            onClick={() => {
+              // TODO: Open profile settings
+            }}
+          >
+            <User className="mr-2 h-4 w-4" />
+            Profile
+          </DropdownMenuItem>
+          
+          <DropdownMenuItem
+            onClick={() => {
+              // TODO: Open settings modal
+            }}
+          >
+            <Settings className="mr-2 h-4 w-4" />
+            Settings
+          </DropdownMenuItem>
+          
+          <DropdownMenuSeparator />
+          
+          <DropdownMenuItem
+            onClick={handleSignOut}
+            className="text-destructive focus:text-destructive cursor-pointer"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Sign out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     );
   }
 
@@ -129,7 +128,7 @@ export function AuthButton() {
       <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="invisible">
               {authMode === 'login' ? 'Sign in to Hyra' : 'Create your account'}
             </DialogTitle>
           </DialogHeader>

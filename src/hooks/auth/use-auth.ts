@@ -248,17 +248,25 @@ export function useAuth() {
         switch (event) {
           case 'SIGNED_IN':
             if (session) {
+              setLoading(true);
               setUser(session.user);
               setSession(session);
-              await Promise.all([
-                fetchUserProfile(session.user.id),
-                fetchUserSettings(session.user.id),
-              ]);
+              try {
+                await Promise.all([
+                  fetchUserProfile(session.user.id),
+                  fetchUserSettings(session.user.id),
+                ]);
+              } catch (error) {
+                console.error('Error fetching user data after sign in:', error);
+              } finally {
+                setLoading(false);
+              }
             }
             break;
           
           case 'SIGNED_OUT':
             signOutStore();
+            setLoading(false);
             break;
           
           case 'TOKEN_REFRESHED':
@@ -271,7 +279,7 @@ export function useAuth() {
     );
 
     return () => subscription.unsubscribe();
-  }, [setUser, setSession, signOutStore, fetchUserProfile, fetchUserSettings]);
+  }, [setUser, setSession, setLoading, signOutStore, fetchUserProfile, fetchUserSettings]);
 
   // Initialize on mount
   useEffect(() => {

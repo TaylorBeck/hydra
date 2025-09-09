@@ -67,38 +67,38 @@ export function LoginForm({ onSuccess, onSwitchToSignUp }: LoginFormProps) {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="space-y-2">
-          <label htmlFor="email" className="text-sm font-medium">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div className="space-y-3">
+          <label htmlFor="email" className="text-sm font-medium leading-none">
             Email
           </label>
           <div className="relative">
-            <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Mail className="absolute left-3 top-1/2 h-4 w-4 text-muted-foreground -translate-y-1/2" />
             <Input
               id="email"
               type="email"
               placeholder="Enter your email"
-              className="pl-10"
+              className="pl-10 h-11 focus-visible:ring-offset-1"
               {...register('email')}
               disabled={isFormLoading}
             />
           </div>
           {errors.email && (
-            <p className="text-sm text-destructive">{errors.email.message}</p>
+            <p className="text-sm text-destructive mt-1">{errors.email.message}</p>
           )}
         </div>
 
-        <div className="space-y-2">
-          <label htmlFor="password" className="text-sm font-medium">
+        <div className="space-y-3">
+          <label htmlFor="password" className="text-sm font-medium leading-none">
             Password
           </label>
           <div className="relative">
-            <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Lock className="absolute left-3 top-1/2 h-4 w-4 text-muted-foreground -translate-y-1/2" />
             <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
               placeholder="Enter your password"
-              className="pl-10 pr-10"
+              className="pl-10 pr-10 h-11 focus-visible:ring-offset-1"
               {...register('password')}
               disabled={isFormLoading}
             />
@@ -106,7 +106,7 @@ export function LoginForm({ onSuccess, onSwitchToSignUp }: LoginFormProps) {
               type="button"
               variant="ghost"
               size="icon"
-              className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+              className="absolute right-0 top-0 h-11 px-3 hover:bg-transparent focus-visible:ring-offset-1"
               onClick={() => setShowPassword(!showPassword)}
               disabled={isFormLoading}
             >
@@ -118,19 +118,19 @@ export function LoginForm({ onSuccess, onSwitchToSignUp }: LoginFormProps) {
             </Button>
           </div>
           {errors.password && (
-            <p className="text-sm text-destructive">{errors.password.message}</p>
+            <p className="text-sm text-destructive mt-1">{errors.password.message}</p>
           )}
         </div>
 
         {errors.root && (
-          <div className="rounded-md bg-destructive/15 p-3">
-            <p className="text-sm text-destructive">{errors.root.message}</p>
+          <div className="rounded-md bg-destructive/15 dark:bg-destructive/20 p-3 border border-destructive/20">
+            <p className="text-sm text-destructive font-medium">{errors.root.message}</p>
           </div>
         )}
 
         <Button
           type="submit"
-          className="w-full"
+          className="w-full h-11 mt-6"
           disabled={isFormLoading}
         >
           {isFormLoading ? 'Signing in...' : 'Sign in'}
@@ -151,6 +151,7 @@ export function LoginForm({ onSuccess, onSwitchToSignUp }: LoginFormProps) {
       <div className="grid grid-cols-2 gap-3">
         <Button
           variant="outline"
+          className="h-11"
           onClick={() => handleOAuthSignIn('google')}
           disabled={isFormLoading}
         >
@@ -176,6 +177,7 @@ export function LoginForm({ onSuccess, onSwitchToSignUp }: LoginFormProps) {
         </Button>
         <Button
           variant="outline"
+          className="h-11"
           onClick={() => handleOAuthSignIn('github')}
           disabled={isFormLoading}
         >
