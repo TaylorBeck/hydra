@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { LogIn, LogOut, User, Settings } from 'lucide-react';
+import { CircleUserRound, LogIn, LogOut, User, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -121,7 +121,7 @@ export function AuthButton() {
         className="h-9 w-9 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors duration-200"
         onClick={() => setShowAuthDialog(true)}
       >
-        <LogIn className="h-4 w-4" />
+        <CircleUserRound className="h-4 w-4" />
         <span className="sr-only">Sign in</span>
       </Button>
 

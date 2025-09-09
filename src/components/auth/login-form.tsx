@@ -72,7 +72,7 @@ export function LoginForm({ onSuccess, onSwitchToSignUp }: LoginFormProps) {
           <label htmlFor="email" className="text-sm font-medium leading-none">
             Email
           </label>
-          <div className="relative">
+          <div className="relative mt-1">
             <Mail className="absolute left-3 top-1/2 h-4 w-4 text-muted-foreground -translate-y-1/2" />
             <Input
               id="email"
@@ -92,7 +92,7 @@ export function LoginForm({ onSuccess, onSwitchToSignUp }: LoginFormProps) {
           <label htmlFor="password" className="text-sm font-medium leading-none">
             Password
           </label>
-          <div className="relative">
+          <div className="relative mt-1">
             <Lock className="absolute left-3 top-1/2 h-4 w-4 text-muted-foreground -translate-y-1/2" />
             <Input
               id="password"
@@ -142,7 +142,7 @@ export function LoginForm({ onSuccess, onSwitchToSignUp }: LoginFormProps) {
           <Separator className="w-full" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
+          <span className="dark:bg-slate-900 bg-background px-2 text-muted-foreground">
             Or continue with
           </span>
         </div>
