@@ -156,9 +156,9 @@ export function SettingsModal() {
                 {Object.entries(PROVIDER_LABELS).map(([provider, label]) => (
                   <div key={provider} className="space-y-3">
                     <label className="text-sm font-medium leading-none text-slate-700 dark:text-slate-300">
-                      {label} API Key
+                      {label} API KeyDDD
                     </label>
-                    <div className="relative">
+                    <div className="relative mt-1">
                       <Input
                         type={showApiKeys[provider] ? 'text' : 'password'}
                         value={localSettings.apiKeys[provider as keyof ApiKeys]}

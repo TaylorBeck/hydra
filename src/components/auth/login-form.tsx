@@ -153,7 +153,7 @@ export function LoginForm({ onSuccess, onSwitchToSignUp }: LoginFormProps) {
           variant="outline"
           className="h-11"
           onClick={() => handleOAuthSignIn('google')}
-          disabled={isFormLoading}
+          disabled
         >
           <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
             <path
@@ -179,7 +179,7 @@ export function LoginForm({ onSuccess, onSwitchToSignUp }: LoginFormProps) {
           variant="outline"
           className="h-11"
           onClick={() => handleOAuthSignIn('github')}
-          disabled={isFormLoading}
+          disabled
         >
           <Github className="mr-2 h-4 w-4" />
           GitHub

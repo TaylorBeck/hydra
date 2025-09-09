@@ -225,6 +225,7 @@ export function EnhancedSettingsModal() {
       return updateSettingsMutation.mutate(settings);
     } else {
       toast.success('Settings saved locally!');
+      
     }
   };
 
@@ -420,7 +421,7 @@ export function EnhancedSettingsModal() {
                         <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                           {label} API Key
                         </label>
-                        <div className="relative">
+                        <div className="relative mt-1">
                           <Input
                             type={showApiKeys[provider] ? 'text' : 'password'}
                             placeholder={`Enter your ${label} API key`}
@@ -477,7 +478,7 @@ export function EnhancedSettingsModal() {
                         type="number"
                         min="1"
                         max="100000"
-                        className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
+                        className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 mt-1"
                         {...register('modelSettings.maxOutputTokens', { valueAsNumber: true })}
                       />
                       {errors.modelSettings?.maxOutputTokens && (
@@ -510,7 +511,7 @@ export function EnhancedSettingsModal() {
                         type="number"
                         min="0"
                         max="100"
-                        className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
+                        className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 mt-1"
                         {...register('modelSettings.topK', { valueAsNumber: true })}
                       />
                     </div>
@@ -551,7 +552,7 @@ export function EnhancedSettingsModal() {
                         type="number"
                         min="0"
                         max="10"
-                        className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
+                        className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 mt-1"
                         {...register('modelSettings.maxRetries', { valueAsNumber: true })}
                       />
                     </div>
@@ -562,7 +563,7 @@ export function EnhancedSettingsModal() {
                       </label>
                       <Textarea
                         placeholder="Enter stop sequences separated by commas"
-                        className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
+                        className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 mt-1"
                         rows={2}
                         {...register('modelSettings.stopSequences')}
                       />
@@ -580,7 +581,7 @@ export function EnhancedSettingsModal() {
                 type="button"
                 variant="outline"
                 onClick={resetToDefaults}
-                className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300"
+                className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 cursor-pointer"
               >
                 <RotateCcw className="h-4 w-4 mr-2" />
                 Reset to Defaults
@@ -588,7 +589,7 @@ export function EnhancedSettingsModal() {
               <Button
                 type="submit"
                 disabled={!isDirty || (isAuthenticated && updateSettingsMutation.isPending)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
               >
                 {isAuthenticated && updateSettingsMutation.isPending ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
