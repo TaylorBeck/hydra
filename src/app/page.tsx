@@ -60,6 +60,15 @@ export default function Chat() {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800 transition-colors duration-500">
+      {/* Animated Background */}
+      <div className="animated-background">
+        <div className="floating-orb orb-1"></div>
+        <div className="floating-orb orb-2"></div>
+        <div className="floating-orb orb-3"></div>
+        <div className="floating-orb orb-4"></div>
+        <div className="floating-orb orb-5"></div>
+      </div>
+
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-slate-200/50 bg-white/80 backdrop-blur-xl dark:border-slate-800/50 dark:bg-slate-950/80 transition-colors duration-300">
         <div className="mx-auto flex h-14 sm:h-16 max-w-full items-center justify-between px-3 sm:px-4 lg:px-6">
@@ -105,7 +114,7 @@ export default function Chat() {
       </header>
 
       {/* Main Content */}
-      <div className="h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-4rem)] supports-[height:100dvh]:h-[calc(100dvh-3.5rem)] supports-[height:100dvh]:sm:h-[calc(100dvh-4rem)]">
+      <div className="relative z-10 h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-4rem)] supports-[height:100dvh]:h-[calc(100dvh-3.5rem)] supports-[height:100dvh]:sm:h-[calc(100dvh-4rem)]">
         <EnhancedChatInterface 
           isMobile={isMobile}
           isMobileSidebarOpen={isMobileSidebarOpen}
